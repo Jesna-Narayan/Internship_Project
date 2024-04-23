@@ -1,7 +1,7 @@
 from django.shortcuts import render
 
 # Create your views here.
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view,APIView
 from rest_framework.response import Response
 from .models import *
 from .serializers import *
@@ -167,6 +167,25 @@ def product_update(request, product_id):
             return Response(serializer.data, status=status.HTTP_200_OK)
         print(serializer.errors)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class categoryWithProduct(APIView):
+    def get(self,request,category_id,format=None):
+        try:
+            category = Category.objects.get(id=category_id)
+        except Category.DoesNotExist:
+            return Response({'error': 'Category not found'},status=status.HTTP_404_NOT_FOUND)
+        category_serializer = CategorySerializers(category)
+        products = Product.objects.filter(category=category)
+        products_serializer = ProductSerializers(products,many=True)
+
+        response_data = {
+            'category' : category_serializer.data,
+            'products' : products_serializer.data,
+        
+        }
+         
+        return Response(response_data,status=status.HTTP_200_OK)
 
 
 
